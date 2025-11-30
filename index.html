@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico da Roleta de Jogos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #e7e7e7;
+            --card-bg: #1e1e1e;
+            --primary-color: #3c8bd4;
+            --text-color: #e0e0e0;
+            --secondary-text: #b0b0b0;
+            --accent-color: #03dac6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            color: var(--secondary-text);
+            font-size: 1rem;
+        }
+
+        h4 {
+            color: #3f3f3f;
+            margin-bottom: 15px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* Controles de Visualização */
+        .view-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .btn-view {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background-color: #fff;
+            color: #555;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-view:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .btn-view.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(60, 139, 212, 0.3);
+        }
+
+        /* Grid de Cards */
+        .games-grid {
+            display: grid;
+            /* AJUSTE AQUI: minmax de 240px garante 4 colunas em telas de 1200px */
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border-radius: 12px; /* Levemente menor para combinar com o tamanho reduzido */
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #333;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(187, 134, 252, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .card-image {
+            width: 100%;
+            height: auto;
+            /* aspect-ratio: 16/9; Mantém proporção consistente */
+            object-fit: cover;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .card-content {
+            padding: 15px; /* Padding reduzido para economizar espaço */
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .game-title {
+            font-size: 1.1rem; /* Fonte levemente ajustada */
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: white;
+            line-height: 1.3;
+        }
+
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--secondary-text);
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-row i {
+            color: var(--accent-color);
+            width: 16px;
+            text-align: center;
+        }
+
+        .badge-latest {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: var(--primary-color);
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+            text-transform: uppercase;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #ffffff;
+            color: #555;
+            font-size: 0.8rem;
+            margin-top: auto;
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .view-controls {
+                justify-content: center;
+            }
+        }
+
+        hr {
+            margin: 30px 0 30px 0;
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
+        }
+
+        /* Estilos de Tabela */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin: 0; /* Margin controlada pelo pai */
+            border: 1px solid #c9dcf5;
+            background-color: white; /* Garante fundo branco */
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            font-size: 0.95rem;
+            text-align: left;
+        }
+
+        .custom-table thead {
+            background-color: var(--primary-color, #0f172a);
+            color: #ffffff;
+        }
+
+        .custom-table th {
+            padding: 15px 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .custom-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            color: var(--text-dark, #333);
+            vertical-align: middle;
+        }
+
+        .custom-table tbody tr:nth-of-type(even) {
+            background-color: #f8fafc;
+        }
+
+        .custom-table tbody tr:hover {
+            background-color: #eff6ff;
+            transition: background-color 0.2s ease;
+        }
+
+        .custom-table tbody tr:last-of-type td {
+            border-bottom: none;
+        }
+
+        /* Miniatura da imagem na tabela */
+        .table-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🎲 Histórico da Roleta 🎮</h1>
+        <p>A sorte decidiu, nós jogamos.</p>
+    </header>
+
+    <main class="container">
+        <section id="lista_de_jogos">
+            <!-- Botões de Alternância -->
+            <div class="view-controls">
+                <button id="btn-cards" class="btn-view active" onclick="mudarVisualizacao('cards')">
+                    <i class="fas fa-th-large"></i> Cards
+                </button>
+                <button id="btn-table" class="btn-view" onclick="mudarVisualizacao('table')">
+                    <i class="fas fa-list"></i> Tabela
+                </button>
+            </div>
+
+            <!-- O container muda de classe dependendo da visualização -->
+            <div id="lista-jogos-container" class="games-grid"></div>
+        </section>
+
+        <hr>
+
+        <section id="roletadores">
+            <h4>Contagem de giros da Roleta (Ordem Crescente)</h4>
+            <div class="table-container">
+                <table class="custom-table" id="table_giros_roleta">
+                    <thead>
+                        <tr>
+                            <th>Pessoa</th>
+                            <th>Contagem</th>
+                            <th>Jogos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Criado para acompanhar nossa jogatina.</p>
+    </footer>
+
+    <script>
+        // Dados dos Jogos
+        const historicoJogos = [
+            { nome: "Super mario bros", quemGirou: "Christian", data: "22/05/2025", foto: "https://upload.wikimedia.org/wikipedia/pt/0/03/Super_Mario_Bros._box.png" },
+            { nome: "Kirby's adventure", quemGirou: "Elias", data: "26/05/2025", foto: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhmlRSNiFZeujvXOuDTCV0ZG76Hhe7uCneTyVH0Yt36MFGsk2wptgG8DCtyvT8C_tpp4H95SElZ8wkKDkibQNhYYOW9e6o4auaTu0UyUZi2M4lT0tSc2ueSTJJlSsxJLi6pnXNjGRivYB-i/s1600/Kirby's_Adventure_Coverart.png" },
+            { nome: "Earthbound", quemGirou: "Elias", data: "02/06/2025", foto: "https://upload.wikimedia.org/wikipedia/pt/2/20/Capa_de_Mother.png" },
+            { nome: "Zelda", quemGirou: "Elias", data: "09/06/2025", foto: "https://upload.wikimedia.org/wikipedia/pt/9/96/The_Legend_of_Zelda_1_capa.png" },
+            { nome: "Yo noid", quemGirou: "Christian", data: "17/06/2025", foto: "https://m.media-amazon.com/images/I/71YrfCYiXxL._AC_UF1000,1000_QL80_.jpg" },
+            { nome: "Excitebike", quemGirou: "Decisão em Grupo", data: "24/06/2025", foto: "https://upload.wikimedia.org/wikipedia/pt/0/0f/Excitebike_capa.png" },
+            { nome: "Balloon fight", quemGirou: "Decisão em Grupo", data: "28/06/2025", foto: "https://poucopixel.com/wp-content/uploads/2015/07/BF-cover.jpg" },
+            { nome: "Metroid", quemGirou: "Gabriel", data: "02/08/2025", foto: "https://upload.wikimedia.org/wikipedia/pt/2/2a/Metroid_capa.png" },
+            { nome: "Punch out", quemGirou: "Christian", data: "12/08/2025", foto: "https://upload.wikimedia.org/wikipedia/en/3/3d/Punch-out_mrdream_boxart.PNG" },
+            { nome: "Felix the cat", quemGirou: "Elias", data: "18/08/2025", foto: "https://bdjogos.com.br/capas/6198-felix-the-cat-NES-capa-1.jpg" },
+            { nome: "Ducktales", quemGirou: "Christian", data: "25/08/2025", foto: "https://upload.wikimedia.org/wikipedia/pt/6/64/DuckTales_NES_Cover.png" },
+            { nome: "Contra", quemGirou: "Gabriel", data: "31/08/2025", foto: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgISl9Wdy5ate4qKxf6D7TJ_llQd4UzuTtv_XA8C6vVU2-gOvkshHuGV1uh-bygFnn9Qy5yixI3gxxUKVFT4yFCQ8Mg3jEtljixasCsgwY553O9x_q4y3ze-oVjWJ7yUQikb4MY1xIHxE5Q/s1600/2361240-nes_contra.jpg" },
+            { nome: "Castlevania", quemGirou: "Gabriel", data: "06/09/2025", foto: "https://greenhillszone.com/wp-content/uploads/2014/10/castlevania.jpg" },
+            { nome: "Bomberman", quemGirou: "Guilherme", data: "17/09/2025", foto: "https://images.shoutwiki.com/bomberpedia/thumb/2/25/NES_Bomberman_cover.jpg/250px-NES_Bomberman_cover.jpg" },
+            { nome: "Final Fantasy", quemGirou: "Elias", data: "03/10/2025", foto: "https://m.media-amazon.com/images/M/MV5BNzcyYjc3ZDktOGEwYS00NTI0LTkyNmQtMDQxY2QyMmZiYjczXkEyXkFqcGc@._V1_.jpg" },
+            { nome: "Ghoul's & Goblins", quemGirou: "Christian", data: "03/10/2025", foto: "https://jogoveio.com.br/wp-content/uploads/2021/03/ghosts-n-goblins-original-jogoveio.jpg" },
+            { nome: "Ninja Crusaders", quemGirou: "Gabriel", data: "07/11/2025", foto: "https://www.retrogamecases.com/wp-content/uploads/nes_ninjacrusaders.jpg" }
+        ];
+
+        // Estado da visualização
+        let visualizacaoAtual = 'cards';
+
+        function mudarVisualizacao(modo) {
+            visualizacaoAtual = modo;
+            
+            // Atualiza botões
+            document.getElementById('btn-cards').classList.toggle('active', modo === 'cards');
+            document.getElementById('btn-table').classList.toggle('active', modo === 'table');
+            
+            // Recarrega a lista
+            carregarJogos();
+        }
+
+        function carregarJogos() {
+            const container = document.getElementById('lista-jogos-container');
+            container.innerHTML = '';
+
+            if (visualizacaoAtual === 'cards') {
+                container.className = 'games-grid'; // Aplica layout de grid
+                
+                historicoJogos.forEach((jogo, index) => {
+                    const cardHTML = `
+                        <div class="game-card">
+                            ${index === 0 ? '<span class="badge-latest">Último Jogado</span>' : ''}
+                            <img src="${jogo.foto}" alt="${jogo.nome}" class="card-image" onerror="this.src='https://via.placeholder.com/400x200?text=Sem+Imagem'">
+                            <div class="card-content">
+                                <h3 class="game-title">${jogo.nome}</h3>
+                                <div class="game-info">
+                                    <div class="info-row">
+                                        <i class="fas fa-dice"></i>
+                                        <span>Girou: <strong>${jogo.quemGirou}</strong></span>
+                                    </div>
+                                    <div class="info-row">
+                                        <i class="far fa-calendar-alt"></i>
+                                        <span>${jogo.data}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += cardHTML;
+                });
+
+            } else {
+                container.className = 'table-container'; // Aplica layout de container de tabela
+                
+                let tableHTML = `
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Capa</th>
+                                <th>Jogo</th>
+                                <th>Quem Girou</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                historicoJogos.forEach(jogo => {
+                    tableHTML += `
+                        <tr>
+                            <td>
+                                <img src="${jogo.foto}" alt="${jogo.nome}" class="table-thumb" onerror="this.src='https://via.placeholder.com/50?text=IMG'">
+                            </td>
+                            <td><strong>${jogo.nome}</strong></td>
+                            <td>${jogo.quemGirou}</td>
+                            <td>${jogo.data}</td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += `</tbody></table>`;
+                container.innerHTML = tableHTML;
+            }
+        }
+
+        const renderizarContagemRoleta = () => {
+            let contadorTabela = [];
+
+            historicoJogos.map(item => {
+                if (!contadorTabela.some(i => i.quemGirou === item.quemGirou)) {
+                    contadorTabela.push({
+                        quemGirou: item.quemGirou,
+                        count: 1,
+                        jogos: [item.nome]
+                    });
+                } else {
+                    contadorTabela = contadorTabela.map(i => {
+                        return i.quemGirou !== item.quemGirou ? i : {
+                            quemGirou: i.quemGirou,
+                            count: i.count + 1,
+                            jogos: [...i.jogos, item.nome]
+                        };
+                    });
+                }
+            });
+
+            // Ordenar por ordem CRESCENTE de contagem
+            contadorTabela.sort((a, b) => a.count - b.count);
+
+            const tbody = document.querySelector("#table_giros_roleta tbody");
+            tbody.innerHTML = ''; // Limpa antes de renderizar para garantir
+
+            contadorTabela.forEach(item => {
+                const tdHTML = `
+                    <tr>
+                        <td><strong>${item.quemGirou}</strong></td>
+                        <td><span class="badge badge-success" style="font-size: 0.9rem;">${item.count}</span></td>
+                        <td>${item.jogos.join('<span style="color: #ccc; margin: 0 5px;">|</span>')}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += tdHTML;
+            });
+        }
+
+        window.onload = () => {
+            carregarJogos();
+            renderizarContagemRoleta();
+        };
+
+    </script>
+</body>
+
+</html>
