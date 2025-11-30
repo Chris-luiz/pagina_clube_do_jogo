@@ -518,7 +518,7 @@
                 }
             });
 
-            contadorTabela.sort((a, b) => a.count + b.count);
+            contadorTabela.sort((a, b) => a.count - b.count);
 
             const tbody = document.querySelector("#table_giros_roleta tbody");
             tbody.innerHTML = '';
